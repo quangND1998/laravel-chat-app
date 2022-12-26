@@ -17,4 +17,7 @@ createInertiaApp({
     },
 });
 
+
 InertiaProgress.init({ color: '#4B5563' });
+// Vue.config.devtools = true;
+// Vue.config.productionTip = true

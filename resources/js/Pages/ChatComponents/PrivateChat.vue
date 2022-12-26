@@ -1,88 +1,58 @@
 <template>
-  <div class="w-2/3 border flex flex-col">
+  <div class="w-2/3 border flex flex-col"       :class="privateChat.isPrivateChatExpand ? 'expand' : ''"
+    @click="$emit('focusPrivateInput')"  
+   
+    >
     <!-- Header -->
-    <HeaderRight />
-
+    <HeaderRight :user="privateChat.selectedReceiver" />
+ 
     <!-- Messages -->
-    <div class="flex-1 overflow-auto" style="background-color: #DAD3CC">
-      <div class="py-2 px-3">
-        <div class="flex justify-center mb-2">
+    <div class="flex-1 overflow-auto" style="background-color: #DAD3CC"  id="private_room"  :class="privateChat.hasNewMessage ? 'blink-anim' : ''"
+      @click="privateChat.isPrivateChatExpand = !privateChat.isPrivateChatExpand">
+      
+      <div class="py-2 px-3" v-for="(message,index) in messages" :key="index" >
+        <!-- <div class="flex justify-center mb-2">
           <div class="rounded py-2 px-4" style="background-color: #DDECF2">
             <p class="text-sm uppercase">February 20, 2018</p>
           </div>
-        </div>
+        </div> -->
 
-        <div class="flex justify-center mb-4">
-          <div class="rounded py-2 px-4" style="background-color: #FCF4CB">
-            <p class="text-xs">
-              Messages to this chat and calls are now secured with end-to-end
-              encryption. Tap for more info.
-            </p>
-          </div>
-        </div>
+       
 
-        <div class="flex mb-2">
-          <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-            <p class="text-sm text-teal">Sylverter Stallone</p>
-            <p class="text-sm mt-1">Hi everyone! Glad you could join! I am making a new movie.</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
-          </div>
-        </div>
-
-        <div class="flex mb-2">
-          <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-            <p class="text-sm text-purple">Tom Cruise</p>
-            <p class="text-sm mt-1">Hi all! I have one question for the movie</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
-          </div>
-        </div>
-
-        <div class="flex mb-2">
-          <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-            <p class="text-sm text-orange">Harrison Ford</p>
-            <p class="text-sm mt-1">Again?</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
-          </div>
-        </div>
-
-        <div class="flex mb-2">
-          <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-            <p class="text-sm text-orange">Russell Crowe</p>
-            <p class="text-sm mt-1">Is Andrés coming for this one?</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
-          </div>
-        </div>
-
-        <div class="flex mb-2">
-          <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-            <p class="text-sm text-teal">Sylverter Stallone</p>
-            <p class="text-sm mt-1">He is. Just invited him to join.</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
-          </div>
-        </div>
-
-        <div class="flex justify-end mb-2">
+        <div class="flex justify-end mb-2" v-if="message.sender.id == this.$page.props.auth.user.id">
           <div class="rounded py-2 px-3" style="background-color: #E2F7CB">
-            <p class="text-sm mt-1">Hi guys.</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
+            <p class="text-sm mt-1">{{ message.content }}</p>
+            <p class="text-right text-xs text-grey-dark mt-1">{{ message.created_at }}</p>
           </div>
         </div>
 
-        <div class="flex justify-end mb-2">
-          <div class="rounded py-2 px-3" style="background-color: #E2F7CB">
-            <p class="text-sm mt-1">Count me in</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
-          </div>
-        </div>
-
-        <div class="flex mb-2">
+       
+        <div class="flex mb-2" v-else>
           <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-            <p class="text-sm text-purple">Tom Cruise</p>
-            <p class="text-sm mt-1">Get Andrés on this movie ASAP!</p>
-            <p class="text-right text-xs text-grey-dark mt-1">12:45 pm</p>
+            <p class="text-sm text-purple">{{ message.sender.name }}</p>
+            <p class="text-sm mt-1">{{ message.content }}</p>
+            <p class="text-right text-xs text-grey-dark mt-1">{{ message.created_at }}</p>
           </div>
         </div>
       </div>
+      <div class="d-flex justify-content-start mb-4" v-if="privateChat.isSelectedReceiverTyping">
+        <div class="img_cont_msg">
+          <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg" class="w-10 h-10 rounded-full">
+        </div>
+        <div class="msg_container">
+          <div id="wave">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      </div>
+      <!-- <span class="inline-block" v-if="privateChat.isSelectedReceiverTyping">
+                        <img src="/images/typing.gif" class="w-16 " />
+                        {{ privateChat.isSelectedReceiverTyping.name }} is Typing ...
+      </span> -->
+               
+   
     </div>
 
     <!-- Input -->
@@ -97,7 +67,8 @@
         </svg>
       </div>
       <div class="flex-1 mx-4">
-        <input class="w-full border rounded px-2 py-2" type="text" />
+        <input class="w-full border rounded px-2 py-2" id="private_input"  v-model="inputMessage"  type="text"  @keyup.enter="saveMessage"
+        @input="onInputPrivateChange" />
       </div>
       <div>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -114,9 +85,44 @@
 
 <script>
 import HeaderRight from "@/Pages/ChatComponents/HeaderRight";
+import { throttle } from 'lodash'
+import InfiniteScroll from "infinite-loading-vue3";
 export default {
     components:{
-        HeaderRight
+        HeaderRight,
+        InfiniteScroll
+    },
+    props:{
+      privateChat:Object, 
+      messages: {
+        type: Array,
+        required: true
+      }
+
+    },
+    data () {
+        return {
+          inputMessage: ''
+        }
+    },
+    mounted () {
+      this.$emit('focusPrivateInput')
+    },
+    methods: {
+      saveMessage () {
+        this.$emit('saveMessage', this.inputMessage, this.privateChat.selectedReceiver.id)
+        this.inputMessage = ''
+      },
+      onInputPrivateChange: throttle(function () {
+        Echo.private(`room.${this.privateChat.roomId}`)
+          .whisper('typing', {
+            user: this.$page.props.auth.user,
+            isTyping: this.inputMessage.length > 0
+          })
+      }, 2000) // keep tell other that we're typing because other user may close the private chat window then re open during we're typing
+    },
+    beforeDestroy () {
+      Echo.leave(`room.${this.privateChat.roomId}`)
     }
 };
 </script>

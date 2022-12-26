@@ -3,11 +3,11 @@
         <div class="flex items-center">
             <div>
                 <img class="w-10 h-10 rounded-full"
-                    src="https://darrenjameseeley.files.wordpress.com/2014/09/expendables3.jpeg" />
+                    :src="user.avatar" />
             </div>
             <div class="ml-4">
                 <p class="text-grey-darkest">
-                    New Movie! Expendables 4
+                    {{user.name }}
                 </p>
                 <p class="text-grey-darker text-xs mt-1">
                     Andrés, Tom, Harrison, Arnold, Sylvester
@@ -43,7 +43,9 @@
 
 <script>
 export default {
-
+    props:{
+        user:Object
+    }
 }
 </script>
 

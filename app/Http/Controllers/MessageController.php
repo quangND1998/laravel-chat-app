@@ -6,11 +6,13 @@ use App\Events\Message;
 use App\Models\Messages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Response;
 class MessageController extends Controller
 {
     public function index(Request $request){
         $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->orderBy('created_at', 'asc')->get();
-        return $messages;
+        
+        return response()->json($messages, Response::HTTP_OK);
 
     }
 

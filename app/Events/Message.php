@@ -49,15 +49,5 @@ class Message implements ShouldBroadcastNow
         }
     }
 
-    // public function broadcastWith()
-    // {
-    //     return [
-    //         'message' => $this->message,
-    //         'user' => [
-    //             'id' => $this->message->user->id,
-    //             'name' => $this->message->user->name,
-    //         ],
-    //         'created_at' => date('d-m-Y H:i:s', strtotime($this->message->created_at))
-    //     ];
-    // }
+   
 }
