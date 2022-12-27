@@ -8,7 +8,7 @@
         <div class="bg-grey-lighter flex-1 overflow-auto">
             <div  v-for="(user, index) in filteredUsersList"
                 :key="index" >
-            <div v-if="user.id !==$page.props.auth.user.id" class="px-3 flex items-center bg-grey-light cursor-pointer"  @click="$emit('selectReceiver', user)">
+            <div v-if="user.id !==$page.props.auth.user.id" class="bg-white px-3 flex items-center hover:bg-gray-200 cursor-pointer" :class="userSelected !==null  && userSelected.id == user.id ? 'bg-gray-200':''"   @click="$emit('selectReceiver', user)">
                 <div>
                     <img class="h-12 w-12 rounded-full" :src="user.avatar" />
                 </div>
@@ -44,7 +44,7 @@
 export default {
     props: {
         users: Array,
-
+        userSelected:Object
     },
     data() {
         return {
