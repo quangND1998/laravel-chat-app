@@ -11,8 +11,8 @@ use App\Http\Resources\MessageResource;
 class MessageController extends Controller
 {
     public function index(Request $request){
-        $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->orderBy('created_at', 'asc')->get();
-
+        // $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->latest()->paginate(10);
+        $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->latest()->get();
         return response()->json($messages, Response::HTTP_OK);
    
 

@@ -5,10 +5,10 @@
             <input type="text" class="w-full px-2 py-2 text-sm" v-model="searchQuery" placeholder="Search or start new chat" />
         </div>
 
-        <div class="bg-grey-lighter flex-1 overflow-auto">
-            <div  v-for="(user, index) in filteredUsersList"
+        <div class="bg-grey-lighter flex-1 overflow-auto" >
+            <div  v-for="(user, index) in filteredUsersList"   
                 :key="index" >
-            <div v-if="user.id !==$page.props.auth.user.id" class="bg-white px-3 flex items-center hover:bg-gray-200 cursor-pointer" :class="userSelected !==null  && userSelected.id == user.id ? 'bg-gray-200':''"   @click="$emit('selectReceiver', user)">
+            <div v-if="user.id !==$page.props.auth.user.id" class="bg-white px-3 flex items-center hover:bg-gray-200 cursor-pointer"  :class="[user.new_messages ? 'blink-anim' : '', userSelected !==null  && userSelected.id == user.id ? 'bg-gray-200':'' ]"   @click="$emit('selectReceiver', user)">
                 <div>
                     <img class="h-12 w-12 rounded-full" :src="user.avatar" />
                 </div>
@@ -17,8 +17,8 @@
                         <p class="text-grey-darkest">
                             {{ user.name }}
                         </p>
-                        <p class="text-xs text-grey-darkest">
-                            12:45 pm
+                        <p class="text-xs text-green-600">
+                            <i class="fa-solid fa-circle"></i> 
                         </p>
                     </div>
                     <!-- <p class="text-grey-dark mt-1 text-sm">

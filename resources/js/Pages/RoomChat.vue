@@ -52,12 +52,9 @@ export default {
     Contacts,
     PrivateChat
   },
-
   props: ["room", "link", "user"],
-
   data() {
     return {
-
       users: [],
       message: "",
       UserTyping: false,
@@ -75,26 +72,20 @@ export default {
       }
     };
   },
-
   mounted() {
-
     this.getMessages(this.room)
     Echo.join(`room.${this.room}`)
       .here(users => {
         this.users = users;
-
       })
       .joining(user => {
         // console.log(user);
         this.users.push(user);
-
       })
       .leaving(user => {
         this.users.splice(this.users.indexOf(user), 1);
-
       })
       .listen("Message", ({ message, user }) => {
-
       })
       .listenForWhisper("typing", user => {
         // console.log("typing", user);
@@ -115,7 +106,6 @@ export default {
           }
         });
       });
-
     Echo.private(`room.${this.$page.props.auth.user.id}`) // listen to user's own room (in order to receive all private messages from other users)
       .listen('Message', e => {
         if (this.privateChat.selectedReceiver && e.message.sender.id === this.privateChat.selectedReceiver.id) {
@@ -130,7 +120,6 @@ export default {
           }
         }
       })
-
   },
   computed: {
     totalUnreadPrivateMessages() {
@@ -152,10 +141,8 @@ export default {
   },
   methods: {
     async getMessages(room) {
-
       const response = await axios.get(`/messages/list?room=${room}`)
       try {
-
         if (room.toString().includes('__')) {
           this.privateMessages = response.data
           this.scrollToBottom(document.getElementById('private_room'), false)
@@ -168,7 +155,6 @@ export default {
         // console.log(error)
       }
     },
-
     async saveMessage(message, receiver = null) {
       try {
         if ((!receiver && !message.trim().length)) {
@@ -260,7 +246,6 @@ export default {
         }
       }
     }
-
   },
   beforeDestroy() {
     if (this.selectedReceiver) { // leave private chat if current has
@@ -272,18 +257,15 @@ export default {
 </script>
 <style lang="scss">
 @keyframes wave {
-
   0%,
   60%,
   100% {
     transform: initial;
   }
-
   30% {
     transform: translateY(-15px);
   }
 }
-
 #wave {
   .dot {
     display: inline-block;
@@ -293,41 +275,32 @@ export default {
     margin-right: 2px;
     background: white;
     animation: wave 1.3s linear infinite;
-
     &:nth-child(2) {
       animation-delay: -1.1s;
     }
-
     &:nth-child(3) {
       animation-delay: -0.9s;
     }
   }
 }
-
 .blink-anim {
   animation: blink 2s infinite;
 }
-
 @keyframes wave {
-
   0%,
   60%,
   100% {
     transform: initial;
   }
-
   30% {
     transform: translateY(-7px);
   }
 }
-
 @keyframes blink {
-
   0%,
   100% {
     background: white;
   }
-
   50% {
     background: #2e7fd7;
   }
