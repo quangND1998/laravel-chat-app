@@ -22,9 +22,10 @@
 
               <!-- Right -->
               <div class="w-2/3 border flex flex-col">
-                <HeaderRight v-if="privateChat.selectedReceiver" :user="privateChat.selectedReceiver" @closePrivateChat="closePrivateChat" />
+                <HeaderRight v-if="privateChat.selectedReceiver" :user="privateChat.selectedReceiver"
+                  @closePrivateChat="closePrivateChat" />
                 <PrivateChat v-if="privateChat.selectedReceiver" :privateChat="privateChat" :messages="privateMessages"
-                  @saveMessage="saveMessage" @focusPrivateInput="focusPrivateInput" />
+                  @saveMessage="saveMessage" @focusPrivateInput="focusPrivateInput"  />
               </div>
             </div>
           </div>
@@ -42,6 +43,8 @@ import HeaderLeft from "@/Pages/ChatComponents/HeaderLeft";
 import HeaderRight from "@/Pages/ChatComponents/HeaderRight";
 import Contacts from "@/Pages/ChatComponents/Contacts";
 import PrivateChat from "@/Pages/ChatComponents/PrivateChat";
+import InfiniteLoading from "v3-infinite-loading";
+import "v3-infinite-loading/lib/style.css";
 export default {
   components: {
     BreezeAuthenticatedLayout,
@@ -50,14 +53,15 @@ export default {
     HeaderLeft,
     HeaderRight,
     Contacts,
-    PrivateChat
+    PrivateChat,
+    InfiniteLoading
   },
 
   props: ["room", "link", "user"],
 
   data() {
     return {
-
+      page:1,
       users: [],
       message: "",
       UserTyping: false,
@@ -70,32 +74,27 @@ export default {
         isSelectedReceiverTyping: false,
         hasNewMessage: false,
         isSeen: null, // null: no new message, false: a message is waiting to be seen, true: user seen message (should display "Seen at..")
-        seenAt: '',
-        roomId: ''
+        seenAt: "",
+        roomId: ""
       }
     };
   },
 
   mounted() {
-
-    this.getMessages(this.room)
+    // this.getEmoji();
+    this.getMessages(this.room);
     Echo.join(`room.${this.room}`)
       .here(users => {
         this.users = users;
-
       })
       .joining(user => {
         // console.log(user);
         this.users.push(user);
-
       })
       .leaving(user => {
         this.users.splice(this.users.indexOf(user), 1);
-
       })
-      .listen("Message", ({ message, user }) => {
-
-      })
+      .listen("Message", ({ message, user }) => { })
       .listenForWhisper("typing", user => {
         // console.log("typing", user);
         this.UserTyping = user;
@@ -117,156 +116,191 @@ export default {
       });
 
     Echo.private(`room.${this.$page.props.auth.user.id}`) // listen to user's own room (in order to receive all private messages from other users)
-      .listen('Message', e => {
-        if (this.privateChat.selectedReceiver && e.message.sender.id === this.privateChat.selectedReceiver.id) {
-          this.privateMessages.push(e.message)
-          this.privateChat.isSeen = null // when receive new private message, considered user have seen -> reset isSeen to inital state
-          this.privateChat.hasNewMessage = true // notify user there's new message
-          this.scrollToBottom(document.getElementById('private_room'), true)
-        } else { // if private chat window doens't open, then we set the badge in ListUser
-          const index = this.users.findIndex(item => item.id === e.message.sender.id)
+      .listen("Message", e => {
+        if (
+          this.privateChat.selectedReceiver &&
+          e.message.sender.id === this.privateChat.selectedReceiver.id
+        ) {
+          this.privateMessages.push(e.message);
+          this.privateChat.isSeen = null; // when receive new private message, considered user have seen -> reset isSeen to inital state
+          this.privateChat.hasNewMessage = true; // notify user there's new message
+          this.scrollToBottom(document.getElementById("private_room"), true);
+        } else {
+          // if private chat window doens't open, then we set the badge in ListUser
+          const index = this.users.findIndex(
+            item => item.id === e.message.sender.id
+          );
           if (index > -1) {
-            this.users[index].new_messages++
+            this.users[index].new_messages++;
           }
         }
-      })
-
+      });
   },
   computed: {
     totalUnreadPrivateMessages() {
-      let count = 0
+      let count = 0;
       this.users.forEach(item => {
-        count += item.new_messages
-      })
-      return count
+        count += item.new_messages;
+      });
+      return count;
     }
   },
   watch: {
     totalUnreadPrivateMessages() {
       if (this.totalUnreadPrivateMessages > 0) {
-        document.title = `${this.totalUnreadPrivateMessages > 0 ? '(' + this.totalUnreadPrivateMessages + ')' : ''} - ${this.$root.appName}`
+        document.title = `${this.totalUnreadPrivateMessages > 0
+            ? "(" + this.totalUnreadPrivateMessages + ")"
+            : ""
+          } - ${this.$root.appName}`;
       } else {
-        document.title = this.$page.props.auth.appName
+        document.title = this.$page.props.auth.appName;
       }
     }
   },
   methods: {
-    async getMessages(room) {
-
-      const response = await axios.get(`/messages/list?room=${room}`)
+    // async getEmoji(){
+    //   const response =await  axios.get('https://unpkg.com/emoji.json@13.1.0/emoji.json')
+    //   try {
+    //     this.emojis = response.data
+    //   } catch (error) {
+    //     // console.log(error)
+    //   }
+    // },
+    async getMessages(room,$state) {
+      const response = await axios.get(`/messages/list?room=${room}`);
+      console.log(response.data.data.length)
       try {
-
-        if (room.toString().includes('__')) {
-          this.privateMessages = response.data
-          this.scrollToBottom(document.getElementById('private_room'), false)
+        if (room.toString().includes("__")) {
+          if (response.data.data.length <10) {
+            this.privateMessages.unshift(...response.data.data);
+            $state.complete();
+          // this.privateMessages = response.data;
+            this.scrollToBottom(document.getElementById("private_room"), false);
+          }
+          else{
+            this.privateMessages.unshift(...response.data.data);
+            $state.loaded();
+            this.scrollToBottom(document.getElementById("private_room"), false);
+          }
+          page++;
         } else {
           // console.log(response)
-          this.publicMessages = response.data
-          this.scrollToBottom(document.getElementById('shared_room'), false)
+          this.publicMessages = response.data;
+          this.scrollToBottom(document.getElementById("shared_room"), false);
         }
       } catch (error) {
+      
         // console.log(error)
       }
     },
 
     async saveMessage(message, receiver = null) {
       try {
-        if ((!receiver && !message.trim().length)) {
-          return
+        if (!receiver && !message.trim().length) {
+          return;
         }
-        const response = await axios.post('/messages/post', {
+        const response = await axios.post("/messages/post", {
           receiver,
           content: message,
           room: receiver ? null : this.currentRoom.id
-        })
+        });
         if (receiver) {
           // console.log('receiver',receiver)
           // console.log('saveMessage_receiver',response.data.message)
-          this.privateMessages.push(response.data.message)
-          this.privateChat.isSeen = false // waiting for other to seen this message
+          this.privateMessages.push(response.data.message);
+          this.privateChat.isSeen = false; // waiting for other to seen this message
           // send message indicate that user stop typing (incase Throttle function isn't called)
-          Echo.private(`room.${this.privateChat.roomId}`)
-            .whisper('typing', {
-              user: this.$page.props.auth.user,
-              isTyping: false
-            })
+          Echo.private(`room.${this.privateChat.roomId}`).whisper("typing", {
+            user: this.$page.props.auth.user,
+            isTyping: false
+          });
         } else {
           // console.log('saveMessage',response.data.message)
-          this.publicMessages.push(response.data.message)
+          this.publicMessages.push(response.data.message);
         }
-        this.scrollToBottom(document.getElementById(`${receiver ? 'private' : 'shared'}_room`), true)
+        this.scrollToBottom(
+          document.getElementById(`${receiver ? "private" : "shared"}_room`),
+          true
+        );
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     },
     async selectReceiver(receiver) {
       // console.log(receiver)
       if (this.$page.props.auth.user.id === receiver.id) {
-        return
+        return;
       }
-      const roomId = this.$page.props.auth.user.id > receiver.id ? `${receiver.id}__${this.$page.props.auth.user.id}` : `${this.$page.props.auth.user.id}__${receiver.id}`
-      this.privateChat.selectedReceiver = receiver
-      this.privateChat.isPrivateChatExpand = true
-      this.privateChat.roomId = roomId
+      const roomId =
+        this.$page.props.auth.user.id > receiver.id
+          ? `${receiver.id}__${this.$page.props.auth.user.id}`
+          : `${this.$page.props.auth.user.id}__${receiver.id}`;
+      this.privateChat.selectedReceiver = receiver;
+      this.privateChat.isPrivateChatExpand = true;
+      this.privateChat.roomId = roomId;
       Echo.private(`room.${roomId}`) // this room to receive whisper events
-        .listenForWhisper('typing', (e) => {
-          this.privateChat.isSelectedReceiverTyping = e.isTyping
-          this.scrollToBottom(document.getElementById('private_room'), true)
+        .listenForWhisper("typing", e => {
+          this.privateChat.isSelectedReceiverTyping = e.isTyping;
+          this.scrollToBottom(document.getElementById("private_room"), true);
         })
-        .listenForWhisper('seen', (e) => {
-          console.log(e)
-          if (this.privateChat.isSeen === false) { // check if user waiting for his message to be seen
-            this.privateChat.isSeen = true
-            this.privateChat.seenAt = e.time
-            this.scrollToBottom(document.getElementById('private_room'), true)
+        .listenForWhisper("seen", e => {
+          console.log(e);
+          if (this.privateChat.isSeen === false) {
+            // check if user waiting for his message to be seen
+            this.privateChat.isSeen = true;
+            this.privateChat.seenAt = e.time;
+            this.scrollToBottom(document.getElementById("private_room"), true);
           }
-        })
-      await this.getMessages(roomId) // need to await until messages are loaded first then we are able to focus the input below
+        });
+      await this.getMessages(roomId); // need to await until messages are loaded first then we are able to focus the input below
     },
     closePrivateChat() {
-      this.privateChat.selectedReceiver = null
-      this.privateChat.isPrivateChatExpand = false
+      this.privateChat.selectedReceiver = null;
+      this.privateChat.isPrivateChatExpand = false;
     },
     scrollToBottom(element, animate = true) {
       if (!element) {
-        return
+        return;
       }
-      this.$nextTick(() => { // run after Vue finishes updating the DOM
+      this.$nextTick(() => {
+        // run after Vue finishes updating the DOM
         if (animate) {
           $(element).animate(
             { scrollTop: element.scrollHeight },
-            { duration: 'medium', easing: 'swing' }
-          )
+            { duration: "medium", easing: "swing" }
+          );
         } else {
-          $(element).scrollTop(element.scrollHeight)
+          $(element).scrollTop(element.scrollHeight);
         }
-      })
+      });
     },
     focusPrivateInput() {
-      const input = document.getElementById('private_input')
+      const input = document.getElementById("private_input");
       // console.log(input)
-      if (input) { // incase we toggle private chat then this input will be removed
-        input.focus()
-        Echo.private(`room.${this.privateChat.roomId}`)
-          .whisper('seen', {
-            user: this.$page.props.auth.user,
-            seen: true,
-            time: new Date()
-          })
-        this.privateChat.hasNewMessage = false // set this to false as now user is focusing the chat
-        const index = this.users.findIndex(item => item.id === this.privateChat.selectedReceiver.id)
+      if (input) {
+        // incase we toggle private chat then this input will be removed
+        input.focus();
+        Echo.private(`room.${this.privateChat.roomId}`).whisper("seen", {
+          user: this.$page.props.auth.user,
+          seen: true,
+          time: new Date()
+        });
+        this.privateChat.hasNewMessage = false; // set this to false as now user is focusing the chat
+        const index = this.users.findIndex(
+          item => item.id === this.privateChat.selectedReceiver.id
+        );
         if (index > -1) {
-          this.users[index].new_messages = 0
+          this.users[index].new_messages = 0;
         }
       }
     }
-
   },
   beforeDestroy() {
-    if (this.selectedReceiver) { // leave private chat if current has
-      Echo.leave(`room.${this.privateChat.roomId}`)
+    if (this.selectedReceiver) {
+      // leave private chat if current has
+      Echo.leave(`room.${this.privateChat.roomId}`);
     }
-    Echo.leave(`room.${this.currentRoom.id}`) // leave the shared room
+    Echo.leave(`room.${this.currentRoom.id}`); // leave the shared room
   }
 };
 </script>

@@ -4,6 +4,7 @@ use App\Http\Controllers\ChatRoomController;
 use App\Http\Controllers\SendMessageController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +23,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('{room?}', ChatRoomController::class)->name('dashboard');
    
 });
-
+Route::get('loading/test', function(){
+    return Inertia::render("Loading");
+});
 Route::middleware(['auth', 'verified'])->group(function () {
   
     Route::get('/messages/list', [MessageController::class, 'index'])->name('messages.index');

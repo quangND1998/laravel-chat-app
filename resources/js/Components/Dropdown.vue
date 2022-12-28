@@ -21,13 +21,13 @@
         >
             <div
                 v-show="open"
-                class="absolute z-50 mt-2 rounded-md shadow-lg"
-                :class="[widthClass, alignmentClasses]"
+                class="absolute z-50 mt-2 rounded-md shadow-lg " 
+                :class="[widthClass, alignmentClasses,display ?'bottom-8':'']"
                 style="display: none;"
-                @click="open = false"
+            
             >
                 <div
-                    class="rounded-md ring-1 ring-black ring-opacity-5"
+                    class="rounded-md ring-0 ring-black ring-opacity-5"
                     :class="contentClasses"
                 >
                     <slot name="content" />
@@ -50,7 +50,8 @@ export default {
         },
         contentClasses: {
             default: () => ['py-1', 'bg-white']
-        }
+        },
+        display:String
     },
 
     setup() {
