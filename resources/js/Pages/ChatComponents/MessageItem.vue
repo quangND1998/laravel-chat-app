@@ -1,5 +1,6 @@
 <template>
-  <div class="flex justify-end mb-2" v-if="message.sender.id == this.$page.props.auth.user.id">
+    <!-- Send -->
+  <div class="flex justify-end mb-2 relative" v-if="message.sender.id == this.$page.props.auth.user.id"  >
 
     <div class="msg-actions flex mr-2">
       <div class="flex align-center">
@@ -18,7 +19,7 @@
       <p class="text-right text-xs text-grey-dark mt-1">{{ formDate(message.created_at) }}</p>
     </div>
     <div
-        class="msg_container_send"
+        class="msg_container_send absolute "
         data-toggle="tooltip"
         data-placement="top"
         :title="message.created_at"
@@ -26,13 +27,21 @@
         <Reaction v-if="message.reactions.length" :reactions="message.reactions" />
       </div>
   </div>
-
-  <div class="flex mb-2" v-else>
+    <!-- Recive -->
+  <div class="flex mb-2 relative" v-else>
     <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
       <p class="text-sm text-purple">{{ message.sender.name }}</p>
       <p class="text-sm mt-1">{{ message.content }}</p>
       <p class="text-right text-xs text-grey-dark mt-1">{{ formDate(message.created_at) }}</p>
     </div>
+    <div
+        class="msg_container_send absolute "
+        data-toggle="tooltip"
+        data-placement="top"
+        :title="message.created_at"
+      >
+        <Reaction v-if="message.reactions.length" :reactions="message.reactions" />
+      </div>
     <div class="msg-actions flex mr-2">
       <div class="flex align-center">
         <i
@@ -44,14 +53,7 @@
         ></i>
       </div>
 
-      <div
-        class="msg_container_send"
-        data-toggle="tooltip"
-        data-placement="top"
-        :title="message.created_at"
-      >
-        <Reaction v-if="message.reactions.length" :reactions="message.reactions" />
-      </div>
+    
     </div>
   </div>
 </template>
