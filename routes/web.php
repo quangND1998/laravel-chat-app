@@ -3,6 +3,7 @@
 use App\Http\Controllers\ChatRoomController;
 use App\Http\Controllers\SendMessageController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ReactionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,12 +24,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('{room?}', ChatRoomController::class)->name('dashboard');
    
 });
-Route::get('loading/test', function(){
-    return Inertia::render("Loading");
-});
+Route::get('loading/test', [MessageController::class,'test']);
 Route::middleware(['auth', 'verified'])->group(function () {
   
     Route::get('/messages/list', [MessageController::class, 'index'])->name('messages.index');
 
-    Route::post('/messages/post', [MessageController::class, 'store'])->name('messages.store');;
+    Route::post('/messages/post', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/reactions/post',  [ReactionController::class, 'react'])->name('react.post');
 });

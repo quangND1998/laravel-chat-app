@@ -23,4 +23,7 @@ class Messages extends Model
     {
         return $this->belongsTo(Chatroom::class, 'room');
     }
+    public function reactions () {
+        return $this->hasMany(Reaction::class, 'msg_id');
+    }
 }

@@ -1,33 +1,28 @@
 <template>
 
   <div class="flex-1 overflow-auto" style="background-color: #DAD3CC" id="private_room"
-    :class="privateChat.hasNewMessage ? 'blink-anim' : ''" @click="$emit('focusPrivateInput')">
-
-    <div class="py-2 px-3" v-for="(message, index) in messages" :key="index">
+    :class="privateChat.hasNewMessage ? 'blink-anim' : ''" >
+    <div class="loading mb-2 text-center" v-if="privateChat.message.isLoading">
+        <svg
+          version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+          <path fill="#FF6700" d="M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z" transform="rotate(18.3216 25 25)">
+            <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.6s" repeatCount="indefinite"></animateTransform>
+          </path>
+        </svg>
+      </div>
+    
       <!-- <div class="flex justify-center mb-2">
           <div class="rounded py-2 px-4" style="background-color: #DDECF2">
             <p class="text-sm uppercase">February 20, 2018</p>
           </div>
         </div> -->
+        <MessageItem v-for="(message, index) in privateChat.message.list" :key="index"  :message="message"
+        @showEmoji="showEmoji" />
 
 
 
-      <div class="flex justify-end mb-2" v-if="message.sender.id == this.$page.props.auth.user.id">
-        <div class="rounded py-2 px-3" style="background-color: #E2F7CB">
-          <p class="text-sm mt-1">{{ message.content }} </p>
-          <p class="text-right text-xs text-grey-dark mt-1">{{ formDate(message.created_at) }}</p>
-        </div>
-      </div>
-
-
-      <div class="flex mb-2" v-else>
-        <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-          <p class="text-sm text-purple">{{ message.sender.name }}</p>
-          <p class="text-sm mt-1">{{ message.content }}</p>
-          <p class="text-right text-xs text-grey-dark mt-1">{{ formDate(message.created_at) }}</p>
-        </div>
-      </div>
-    </div>
+     
+ 
 
     <div class=" justify-end float-right" v-if="privateChat.isSeen">
       <i class="text-xs">Seen {{ localDate(privateChat.seenAt) }}</i>
@@ -48,8 +43,7 @@
                         <img src="/images/typing.gif" class="w-16 " />
                         {{ privateChat.isSelectedReceiverTyping.name }} is Typing ...
       </span> -->
-
-
+  
   </div>
 
   <!-- Input -->
@@ -64,12 +58,12 @@
     </template>
     <template #content>
 
-      <EmojiPicker :native="true" @select="onSelectEmoji" />
+      <EmojiPicker :native="true" @select="addInputEmoji" />
     </template>
     </BreezeDropdown>
     <div class="flex-1 mx-4">
       <input class="w-full border rounded px-2 py-2" id="private_input" v-model="inputMessage" type="text"
-        @keyup.enter="saveMessage" @input="onInputPrivateChange" />
+        @keyup.enter="saveMessage" @input="onInputPrivateChange" @click="$emit('focusPrivateInput')" />
     </div>
     <div>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -81,6 +75,16 @@
 
 
   </div>
+  <Emoji
+      :emojiCoordinates="emojiCoordinates"
+      :isShow="isShowEmoji"
+      :selectedMessage="selectedMessage"
+      @hideEmoji="hideEmoji"
+      @selectEmoji="selectEmoji"
+    />
+
+
+ 
 </template>
 
 <script>
@@ -89,30 +93,43 @@ import { throttle } from 'lodash'
 import filter from '@/mixins/filter'
 import EmojiPicker from 'vue3-emoji-picker'
 import BreezeDropdown from "@/Components/Dropdown.vue";
+import Emoji from './Emoji'
+import MessageItem from './MessageItem'
 export default {
   mixins: [filter],
   components: {
     HeaderRight,
     EmojiPicker,
-    BreezeDropdown
+    BreezeDropdown,
+    MessageItem,
+    Emoji
   },
   props: {
     privateChat: Object,
-    messages: {
-      type: Array,
-      required: true
+    selectedMessage: {
+      type: Object
+    },
+    isShowEmoji: {
+      type: Boolean
+    },
+    emojiCoordinates: {
+      type: Object
     }
-
   },
   data() {
     return {
       inputMessage: ''
     }
   },
-  emits: ['saveMessage', 'focusPrivateInput'],
+  emits: ['saveMessage', 'focusPrivateInput','getMessages','showEmoji','hideEmoji','selectEmoji'],
   mounted() {
     this.$emit('focusPrivateInput')
-
+    $('#private_room').on('scroll', async () => {
+      const scroll = $('#private_room').scrollTop()
+      if (scroll < 1 && this.privateChat.message.currentPage < this.privateChat.message.lastPage) {
+        this.$emit('getMessages', this.privateChat.roomId, this.privateChat.message.currentPage + 1, true)
+      }
+    })
   },
   methods: {
     saveMessage() {
@@ -127,8 +144,17 @@ export default {
         })
     }, 2000), // keep tell other that we're typing because other user may close the private chat window then re open during we're typing
 
-    onSelectEmoji(emoji) {
+    addInputEmoji(emoji) {
       this.inputMessage += emoji.i
+    },
+    showEmoji (message, event) {
+      this.$emit('showEmoji', message, event)
+    },
+    hideEmoji () {
+      this.$emit('hideEmoji')
+    },
+    selectEmoji (emoji) {
+      this.$emit('selectEmoji', emoji)
     },
   },
 
@@ -139,5 +165,7 @@ export default {
 </script>
 
 <style>
-
+.private-message-container {
+  z-index: 1;
+}
 </style>

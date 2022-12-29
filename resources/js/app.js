@@ -10,13 +10,13 @@ const emitter = mitt();
 createInertiaApp({
     title: (title) => `${title} `,
     resolve: (name) => require(`./Pages/${name}.vue`),
-    setup({ el, app:inertiaApp, props, plugin }) {
-        const app =  createApp({ render: () => h(inertiaApp, props) })
+    setup({ el, app: inertiaApp, props, plugin }) {
+        const app = createApp({ render: () => h(inertiaApp, props) })
             .use(plugin)
             .mixin({ methods: { route } })
         app.config.globalProperties.emitter = emitter
         app.mount(el)
-    
+
     },
 });
 

@@ -8,11 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Response;
 use App\Http\Resources\MessageResource;
+use Inertia\Inertia;
+
 class MessageController extends Controller
 {
     public function index(Request $request){
         // $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->latest()->paginate(10);
-        $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->latest()->get();
+        $messages = Messages::with(['sender', 'receiver', 'reactions.user'])->where('room', $request->query('room', ''))->latest()
+        ->paginate(10);
         return response()->json($messages, Response::HTTP_OK);
    
 
@@ -21,6 +24,7 @@ class MessageController extends Controller
 
     public function store(Request $request)
     {
+        dd('a');
         $message = new Messages();
         $message->sender = Auth::user()->id;
         $message->content = $request->input('content', '');
@@ -35,8 +39,13 @@ class MessageController extends Controller
 
         $message->save();
 
-        broadcast(new Message($message->load('sender')))->toOthers(); // send to others EXCEPT user who sent this message
+        broadcast(new Message($message->load(['sender', 'reactions.user'])))->toOthers(); // send to others EXCEPT user who sent this message
 
-        return response()->json(['message' => $message->load('sender')]);
+        return response()->json(['message' => $message->load(['sender','reactions.user'])]);
+    }
+
+    function test(){
+     
+        return Inertia::render("Loading");
     }
 }
