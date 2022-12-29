@@ -1,5 +1,5 @@
 <template>
-    <div class=" flex justify-center items-center bg-white shadow-sm rounded-2xl right-0 px-1 ">
+    <div class=" flex items-center bg-white shadow-sm rounded-2xl  px-1 justify-end">
       <div
         class="flex ml-1"
         v-for="e in reactionFormat"

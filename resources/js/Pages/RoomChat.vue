@@ -166,7 +166,9 @@ export default {
             this.users[index].new_messages++;
           }
         }
-      });
+      }).listen('MessageReacted', e => {
+          this.onOtherUserReaction(e.reaction, 'private')
+        });
   },
   computed: {
     totalUnreadPrivateMessages() {

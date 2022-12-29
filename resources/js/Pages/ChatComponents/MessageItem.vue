@@ -30,12 +30,11 @@
     <!-- Recive -->
   <div class="flex mb-2 relative" v-else>
     <div class="rounded py-2 px-3" style="background-color: #F2F2F2">
-      <p class="text-sm text-purple">{{ message.sender.name }}</p>
       <p class="text-sm mt-1">{{ message.content }}</p>
       <p class="text-right text-xs text-grey-dark mt-1">{{ formDate(message.created_at) }}</p>
     </div>
     <div
-        class="msg_container_send absolute "
+        class="msg_container_send absolute  "
         data-toggle="tooltip"
         data-placement="top"
         :title="message.created_at"
