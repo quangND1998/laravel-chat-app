@@ -166,9 +166,8 @@ export default {
             this.users[index].new_messages++;
           }
         }
-      }).listen('MessageReacted', e => {
-          this.onOtherUserReaction(e.reaction, 'private')
-        });
+      })
+
   },
   computed: {
     totalUnreadPrivateMessages() {
@@ -196,13 +195,13 @@ export default {
     async getMessages(room, page = 1, loadMore = false) {
       const isPrivate = room.toString().includes("__");
       const chat = isPrivate ? this.privateChat : this.publicChat;
-      console.log(room)
+      // console.log(room)
       try {
         chat.message.isLoading = true;
         const response = await axios.get(
           `/messages/list?room=${room}&page=${page}`
         );
-        console.log(response)
+        // console.log(response)
         chat.message.list = [
           ...response.data.data.reverse(),
           ...chat.message.list
@@ -285,11 +284,12 @@ export default {
       this.privateChat.roomId = roomId;
       Echo.private(`room.${roomId}`) // this room to receive whisper events
         .listenForWhisper("typing", e => {
+      
           this.privateChat.isSelectedReceiverTyping = e.isTyping;
           this.scrollToBottom(document.getElementById("private_room"), true);
         })
         .listenForWhisper("seen", e => {
-          console.log(e);
+          // console.log(e);
           if (this.privateChat.isSeen === false) {
             // check if user waiting for his message to be seen
             this.privateChat.isSeen = true;
@@ -297,7 +297,8 @@ export default {
             this.scrollToBottom(document.getElementById("private_room"), true);
           }
         }).listen('MessageReacted', e => {
-          this.onOtherUserReaction(e.reaction, 'private')
+          // console.log(e)
+          this.onOtherUserReaction(e.message, 'private')
         })
       await this.getMessages(roomId); // need to await until messages are loaded first then we are able to focus the input below
     },
@@ -341,7 +342,7 @@ export default {
       }
     },
     showEmoji (message, event) {
-      console.log('showEmoji',message)
+      // console.log('showEmoji',message)
       this.emojiCoordinates.x = event.clientX
       this.emojiCoordinates.y = event.clientY
       this.isShowEmoji = true
@@ -363,14 +364,18 @@ export default {
       this.privateChat.isOnline = true
     },
     async selectEmoji (emoji) {
+      
       try {
         const response = await axios.post('/reactions/post', {
           msg_id: this.selectedMessage.id,
           user_id: this.$page.props.auth.user.id,
           emoji_id: emoji.id
         })
+
+        // console.log(response.data.message.reactions)
         const index = this.selectedMessage.reactions.findIndex(item => item.user_id === this.$page.props.auth.user.id)
         if (index > -1) {
+
           const reaction = this.selectedMessage.reactions[index]
           if (emoji.id === reaction.emoji_id) { // deactive
             this.selectedMessage.reactions.splice(index, 1)
@@ -378,31 +383,22 @@ export default {
             reaction.emoji_id = emoji.id
           }
         } else { // user first react
-          const { reaction } = response.data
-          this.selectedMessage.reactions.push({ ...reaction, user:this.$page.props.auth.user })
+          // const { reaction } = response.data.reactions
+          this.selectedMessage.reactions =response.data.message.reactions;
         }
         this.hideEmoji()
       } catch (error) {
         console.log(error)
       }
     },
-    onOtherUserReaction (reaction, room) {
+    onOtherUserReaction (message_reaction, room) {
+      // console.log(message_reaction)
       let listMessage = []
       listMessage = room === 'share' ? this.publicChat.message.list : this.privateChat.message.list
-      const messageIndex = listMessage.findIndex(m => m.id === reaction.msg_id)
+      const messageIndex = listMessage.findIndex(m => m.id === message_reaction.id)
       if (messageIndex > -1) {
         const message = listMessage[messageIndex]
-        const index = message.reactions.findIndex(item => item.user.id === reaction.user.id)
-        if (index > -1) {
-          const r = message.reactions[index]
-          if (reaction.emoji_id === r.emoji_id) { // deactive
-            message.reactions.splice(index, 1)
-          } else {
-            r.emoji_id = reaction.emoji_id
-          }
-        } else {
-          message.reactions.push({ ...reaction, user: reaction.user })
-        }
+        message.reactions = message_reaction.reactions
       }
     }
   },

@@ -1,7 +1,7 @@
 <template>
     <div class=" flex items-center bg-white shadow-sm rounded-2xl  px-1 justify-end">
       <div
-        class="flex ml-1"
+        class="flex "
         v-for="e in reactionFormat"
         :key="e.id"
       >

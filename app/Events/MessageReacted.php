@@ -11,7 +11,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageReacted implements ShouldBroadcastNow
+class MessageReacted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -22,12 +22,12 @@ class MessageReacted implements ShouldBroadcastNow
      * @return void
      */
 
-     public $reaction;
+     public $message;
      public $channel;
  
-     public function __construct($reaction, $channel)
+     public function __construct($message, $channel)
      {
-         $this->reaction = $reaction;
+         $this->message = $message;
          $this->channel = $channel;
      }
  

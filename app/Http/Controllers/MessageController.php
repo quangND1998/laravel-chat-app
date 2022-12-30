@@ -11,11 +11,11 @@ use App\Http\Resources\MessageResource;
 use Inertia\Inertia;
 
 class MessageController extends Controller
-{
+{ 
     public function index(Request $request){
         // $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->latest()->paginate(10);
         $messages = Messages::with(['sender', 'receiver', 'reactions.user'])->where('room', $request->query('room', ''))->latest()
-        ->paginate(10);
+        ->paginate(20);
         return response()->json($messages, Response::HTTP_OK);
    
 
@@ -24,7 +24,7 @@ class MessageController extends Controller
 
     public function store(Request $request)
     {
-        dd('a');
+      
         $message = new Messages();
         $message->sender = Auth::user()->id;
         $message->content = $request->input('content', '');
