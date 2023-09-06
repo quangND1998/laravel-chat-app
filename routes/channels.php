@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('room.{id}', function ($user, $id) {
     return new UserResource($user); 
 });
+Broadcast::channel('room', function ($user, $id) {
+    return true;
+});
 Broadcast::channel('sovled-conversation', function ($user, $id) {
     return true;
 });

@@ -1,6 +1,6 @@
 {
     "debug": false,
-    "port": 6001,
+    "port": 6002,
     "appManager.array.apps": [{
         "id": "app-id",
         "key": "app-key",

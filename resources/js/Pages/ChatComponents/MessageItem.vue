@@ -1,10 +1,12 @@
 <template>
   <!-- Send -->
 
+  
   <div
     class="flex justify-end mb-2  " 
     v-if="message.sender.id == this.$page.props.auth.user.id"
   >
+  
     <div class="msg-actions flex mr-2 ">
       <div class="flex items-center">
         <i

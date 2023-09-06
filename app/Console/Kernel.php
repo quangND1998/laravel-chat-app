@@ -2,8 +2,10 @@
 
 namespace App\Console;
 
+use App\Events\BotNotification;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -25,6 +27,20 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        // $schedule->command('bot:notification')->everyMinute();
+
+        // $schedule->call(function () {
+        //     $quotes = [
+        //         'Detect typing and Seen message are available in Private Chat. Select an user from The right Sidebar and start Private Chat',
+        //         'You can react to other user\'s message (Love, Haha, Angry,...)'
+        //     ];
+        
+      
+        //     $randIndex = array_rand($quotes);
+        //     $message = $quotes[$randIndex];
+        //     broadcast(new BotNotification($message));
+        //     Log::info('Bot notification sent');
+        // })->everyMinute();
     }
 
     /**

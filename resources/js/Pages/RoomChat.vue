@@ -116,6 +116,15 @@ export default {
   },
   mounted() {
     this.getMessages(this.room);
+    // Echo.channel('room').listen('EventsBotNotification', e => {
+    //       this.privateChat.message.list.push({
+    //         content: e.message,
+    //         id: Date.now(),
+    //         created_at: Date.now(),
+    //         type: 'bot'
+    //       })
+    //       this.scrollToBottom(document.getElementById('shared_room'), true)
+    //   })
     Echo.join(`room.${this.room}`)
       .here(users => {
         this.users = users;

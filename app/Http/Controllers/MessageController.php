@@ -13,9 +13,9 @@ use Inertia\Inertia;
 class MessageController extends Controller
 { 
     public function index(Request $request){
-        // $messages = Messages::with(['sender', 'receiver'])->where('room', $request->query('room', ''))->latest()->paginate(10);
+        // $messages = Messages::with(['sender', 'receiver'])))->latest()->paginate(10);
         $messages = Messages::with(['sender', 'receiver', 'reactions.user'])->where('room', $request->query('room', ''))->latest()
-        ->paginate(20);
+        ->paginate(50);
         return response()->json($messages, Response::HTTP_OK);
    
 
